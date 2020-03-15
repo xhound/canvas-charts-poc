@@ -1,0 +1,1 @@
+export const composeFromArray = (funcs: Function[]) => (arg: any) => funcs.reduce((acc, f) => f(acc), arg);

@@ -1,46 +1,46 @@
 import * as React from 'react';
-import { pipe } from 'fp-ts/lib/pipeable';
-import { chain, map, Option } from 'fp-ts/lib/Option';
-import { fromNullable } from 'fp-ts/es6/Option';
-import { flow } from 'fp-ts/lib/function';
-import { drawAbscissa, drawChart, getAbsMax, normalizeData, getCanvasContext } from './helpers/Chart.helpers';
+import {map, Option, chain, option, some} from 'fp-ts/lib/Option';
+import {fromNullable} from 'fp-ts/es6/Option';
+import {drawPointer, getCanvasContext, renderChart} from './helpers/Chart.helpers';
+import {pipe} from "fp-ts/lib/pipeable";
+import './Chart.component.css';
+import {sequenceT} from "fp-ts/lib/Apply";
 
 interface TDimensions {
-	width: number;
-	height: number;
+    width: number;
+    height: number;
 }
 
 interface TChartProps {
-	data: number[];
-	dimensions: TDimensions;
+    data: number[][];
+    dimensions: TDimensions;
 }
 
 export class Chart extends React.PureComponent<TChartProps> {
-	componentDidMount(): void {
-		const props = this.props;
-		const { width, height } = props.dimensions;
-		const canv: Option<HTMLCanvasElement> = fromNullable(document.getElementById('canvas') as HTMLCanvasElement);
+    componentDidMount(): void {
+        const props = this.props;
+        const {width, height} = props.dimensions;
+        const canvChart: Option<HTMLCanvasElement> = fromNullable(document.getElementById('chart') as HTMLCanvasElement);
+        const canvPointer: Option<HTMLCanvasElement> = fromNullable(document.getElementById('pointer') as HTMLCanvasElement);
 
-		const offsetY = height / 2;
+        renderChart(props.data, canvChart, width, height);
+        const preparePointer = drawPointer(width, height, 'red');
 
-		const maxAbsValue = getAbsMax(props.data);
+        pipe(canvPointer,
+            chain(canv => pipe(sequenceT(option)(some(canv), getCanvasContext(canv)),
+                map(([canv, ctx]) => canv.addEventListener('mousemove', preparePointer(ctx)))
+                )))
 
-		const data = normalizeData(props.data, maxAbsValue);
+    }
 
-		const drawAbscissaLine = drawAbscissa(width, offsetY);
-		const drawChart1Line = drawChart(data, width, offsetY, 'red');
-
-		pipe(canv,
-			chain(getCanvasContext),
-			map(flow(drawChart1Line, drawAbscissaLine))
-		);
-	}
-
-	render() {
-		const props = this.props;
-		const { width, height } = props.dimensions;
-		return (
-			<canvas width={width} height={height} id={'canvas'}>Oooops...</canvas>
-		);
-	}
+    render() {
+        const props = this.props;
+        const {width, height} = props.dimensions;
+        return (
+            <div className={'chart-container'}>
+                <canvas width={width} height={height} id={'chart'} className={'chart'} />
+                <canvas width={width} height={height} id={'pointer'} className={'pointer'} />
+            </div>
+        );
+    }
 }

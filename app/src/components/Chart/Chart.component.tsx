@@ -1,10 +1,10 @@
 import * as React from 'react';
 import {map, Option, chain, option, some} from 'fp-ts/lib/Option';
-import {fromNullable} from 'fp-ts/es6/Option';
 import {drawPointer, getCanvasContext, renderChart} from './helpers/Chart.helpers';
 import {pipe} from "fp-ts/lib/pipeable";
 import './Chart.component.css';
 import {sequenceT} from "fp-ts/lib/Apply";
+import {createOptionRef} from "../../utils/createOptionRef";
 
 interface TDimensions {
     width: number;
@@ -17,13 +17,18 @@ interface TChartProps {
 }
 
 export class Chart extends React.PureComponent<TChartProps> {
+    private canvChart = createOptionRef<HTMLCanvasElement>();
+    private canvPointer = createOptionRef<HTMLCanvasElement>();
+
+
     componentDidMount(): void {
         const props = this.props;
         const {width, height} = props.dimensions;
-        const canvChart: Option<HTMLCanvasElement> = fromNullable(document.getElementById('chart') as HTMLCanvasElement);
-        const canvPointer: Option<HTMLCanvasElement> = fromNullable(document.getElementById('pointer') as HTMLCanvasElement);
+        const canvChart: Option<HTMLCanvasElement> = this.canvChart.optionCurrent;
+        const canvPointer: Option<HTMLCanvasElement> = this.canvPointer.optionCurrent;
 
         renderChart(props.data, canvChart, width, height);
+
         const preparePointer = drawPointer(width, height, 'red');
 
         pipe(canvPointer,
@@ -36,10 +41,13 @@ export class Chart extends React.PureComponent<TChartProps> {
     render() {
         const props = this.props;
         const {width, height} = props.dimensions;
+
+        renderChart(props.data, this.canvChart.optionCurrent, width, height);
+
         return (
             <div className={'chart-container'}>
-                <canvas width={width} height={height} id={'chart'} className={'chart'} />
-                <canvas width={width} height={height} id={'pointer'} className={'pointer'} />
+                <canvas width={width} height={height} ref={this.canvChart} className={'chart'} />
+                <canvas width={width} height={height} ref={this.canvPointer} className={'pointer'} />
             </div>
         );
     }

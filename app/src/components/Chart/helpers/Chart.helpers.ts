@@ -5,6 +5,58 @@ import {flatten} from "fp-ts/lib/Array";
 import {flow} from "fp-ts/lib/function";
 import {pipe} from "fp-ts/lib/pipeable";
 
+const chartColors = [
+    'green',
+    'blue',
+    'magenta',
+    'orange',
+    'black',
+];
+
+const lineDashes = [
+    [],
+    [2, 5],
+    [2, 7, 2],
+    [5, 7, 5],
+    [5, 15, 5],
+];
+
+const getChartColor = (i: number) => {
+    if ((i + 1) % 5 === 0) {
+        return chartColors[i];
+    }
+    if ((i + 1) % 4 === 0) {
+        return chartColors[i];
+    }
+    else if ((i + 1) % 3 === 0) {
+        return chartColors[i];
+    }
+    else if ((i + 1) % 2 === 0) {
+        return chartColors[i];
+    }
+    else {
+        return chartColors[0];
+    }
+};
+
+const getDashes = (i: number) => {
+    if ((i + 1) % 5 === 0) {
+        return lineDashes[i];
+    }
+    if ((i + 1) % 4 === 0) {
+        return lineDashes[i];
+    }
+    else if ((i + 1) % 3 === 0) {
+        return lineDashes[i];
+    }
+    else if ((i + 1) % 2 === 0) {
+        return lineDashes[i];
+    }
+    else {
+        return lineDashes[0];
+    }
+};
+
 export const getCanvasContext = (el: HTMLCanvasElement) => fromNullable(el.getContext('2d'));
 
 export const getMin = (ds: number[]) => {
@@ -40,6 +92,7 @@ export const normalizeData = (data: number[], ratio: number) => {
 
 export const drawAbscissa = (width: number, zeroPoint: number) => (ctx: CanvasRenderingContext2D) => {
     ctx.strokeStyle = 'black';
+    ctx.setLineDash([]);
 
     ctx.moveTo(0, zeroPoint);
     ctx.lineTo(width, zeroPoint);
@@ -49,7 +102,7 @@ export const drawAbscissa = (width: number, zeroPoint: number) => (ctx: CanvasRe
     return ctx;
 };
 
-export const drawChart = (data: number[], width: number, zeroPoint: number, color?: string) =>
+export const drawChart = (data: number[], width: number, zeroPoint: number, color?: string, lineDash?: number[]) =>
     (ctx: CanvasRenderingContext2D) => {
         const chartData = data.slice(1);
 
@@ -60,6 +113,7 @@ export const drawChart = (data: number[], width: number, zeroPoint: number, colo
         const offsetX = width / chartLength;
 
         ctx.strokeStyle = color || 'black';
+        ctx.setLineDash(lineDash || []);
 
         ctx.moveTo(0, zeroPoint - data[0]);
         chartData.forEach((d, i) => {
@@ -81,7 +135,9 @@ export const renderChart = (data: number[][], canv: Option<HTMLCanvasElement>, w
 
     const chartsSetup = data
         .map(d => normalizeData(d, ratio))
-        .map(d => drawChart(d, width, zeroPoint));
+        .map((d, i) => {
+            return drawChart(d, width, zeroPoint, getChartColor(i), getDashes(i))
+        });
 
     const drawCharts = composeFromArray(chartsSetup);
 
@@ -89,6 +145,10 @@ export const renderChart = (data: number[][], canv: Option<HTMLCanvasElement>, w
 
     pipe(canv,
         chain(getCanvasContext),
+        map(ctx => {
+            ctx.clearRect(0, 0, width, height);
+            return ctx;
+        }),
         map(flow(drawCharts, drawAbscissaLine))
     );
 };

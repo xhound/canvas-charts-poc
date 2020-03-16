@@ -3,9 +3,15 @@ import './App.css';
 import { Chart } from './components/Chart/Chart.component';
 import { some } from 'fp-ts/lib/Option';
 
+// Play with this numbers
+
+const NUMBER_OF_CHARTS = 3;
+const LENGTH_OF_DATA = 30;
+const UPDATE_DELAY = 2000;
+
 const fakeData = () => {
-	const charts = new Array(3).fill(0);
-	const ds = new Array(30).fill(0);
+	const charts = new Array(NUMBER_OF_CHARTS).fill(0);
+	const ds = new Array(LENGTH_OF_DATA).fill(0);
 	return charts.map(() => ds.map(() => Math.random() * (1 + 1) - 1))};
 
 export class App extends React.Component {
@@ -21,7 +27,7 @@ export class App extends React.Component {
 				data: fakeData(),
 			})
 
-		}, 2000);
+		}, UPDATE_DELAY);
 
 		window.addEventListener('resize', this.handleResize);
 

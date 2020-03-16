@@ -1,20 +1,20 @@
-import {fromNullable, none, Option, some} from 'fp-ts/lib/Option';
-import {RefObject} from 'react';
+import { fromNullable, none, Option, some } from 'fp-ts/lib/Option';
+import { RefObject } from 'react';
 
-export type OptionRefObject<T> = RefObject<T> & {optionCurrent: Option<T>};
+export type OptionRefObject<T> = RefObject<T> & { optionCurrent: Option<T> };
 
 export const createOptionRef = <T = any>(
-  initializer?: () => T,
+	initializer?: () => T,
 ): OptionRefObject<T> => {
-  const initialValue = initializer === undefined ? undefined : initializer();
-  const value: OptionRefObject<T> = {
-    current: initialValue === undefined ? null : initialValue,
-    optionCurrent: initialValue === undefined ? none : some(initialValue),
-  };
+	const initialValue = initializer === undefined ? undefined : initializer();
+	const value: OptionRefObject<T> = {
+		current: initialValue === undefined ? null : initialValue,
+		optionCurrent: initialValue === undefined ? none : some(initialValue),
+	};
 
-  Object.defineProperty(value, 'optionCurrent', {
-    get: () => fromNullable(value.current),
-  });
+	Object.defineProperty(value, 'optionCurrent', {
+		get: () => fromNullable(value.current),
+	});
 
-  return value;
+	return value;
 };

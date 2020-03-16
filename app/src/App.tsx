@@ -8,6 +8,12 @@ import { some } from 'fp-ts/lib/Option';
 const NUMBER_OF_CHARTS = 3;
 const LENGTH_OF_DATA = 30;
 const UPDATE_DELAY = 2000;
+const CHART_PADDING = {
+	top: some(10),
+	bottom: some(10),
+	left: some(10),
+	right: some(40),
+};
 
 const fakeData = () => {
 	const charts = new Array(NUMBER_OF_CHARTS).fill(0);
@@ -52,12 +58,7 @@ export class App extends React.Component {
 		const dimensions = {
 			width: state.width,
 			height: state.height,
-			padding: some({
-				top: some(10),
-				bottom: some(10),
-				left: some(10),
-				right: some(40),
-			}),
+			padding: some(CHART_PADDING),
 		};
 		return (
 			<section>

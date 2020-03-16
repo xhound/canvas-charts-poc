@@ -168,23 +168,3 @@ export const renderChart = (data: number[][], canv: Option<HTMLCanvasElement>, w
 		map(flow(drawCharts, drawAbscissaLine, drawOrdinateLine))
 	);
 };
-
-export const drawPointer = (width: number, height: number, color?: string) =>
-	(ctx: CanvasRenderingContext2D) => {
-		ctx.strokeStyle = color || 'black';
-		return (e: MouseEvent) => {
-			ctx.clearRect(0, 0, width, height);
-			ctx.moveTo(0, e.clientY);
-			ctx.lineTo(width, e.clientY);
-			ctx.stroke();
-
-			ctx.beginPath();
-			ctx.moveTo(e.clientX, 0);
-			ctx.lineTo(e.clientX, height);
-			ctx.stroke();
-
-			ctx.beginPath();
-
-			return ctx;
-		}
-	};

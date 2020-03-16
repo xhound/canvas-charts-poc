@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { map, Option, chain, option, some } from 'fp-ts/lib/Option';
-import { drawPointer, getCanvasContext, renderChart } from './helpers/Chart.helpers';
-import { pipe } from 'fp-ts/lib/pipeable';
+import { Option } from 'fp-ts/lib/Option';
+import { renderChart } from './helpers/Chart.helpers';
 import './Chart.component.css';
-import { sequenceT } from 'fp-ts/lib/Apply';
 import { createOptionRef } from '../../utils/createOptionRef';
+import { renderPointer } from './helpers/Pointer.helpers';
 
 export interface TPadding {
 	top: Option<number>;
@@ -36,21 +35,24 @@ export class Chart extends React.PureComponent<TChartProps> {
 		const canvPointer: Option<HTMLCanvasElement> = this.canvPointer.optionCurrent;
 
 		renderChart(props.data, canvChart, width, height, padding);
+		renderPointer(canvPointer, width, height);
 
-		const preparePointer = drawPointer(width, height, 'red');
+	}
 
-		pipe(canvPointer,
-			chain(canv => pipe(sequenceT(option)(some(canv), getCanvasContext(canv)),
-				map(([canv, ctx]) => canv.addEventListener('mousemove', preparePointer(ctx)))
-			)))
+	componentDidUpdate(prevProps: Readonly<TChartProps>, prevState: Readonly<{}>, snapshot?: any): void {
+		const props = this.props;
+		const { width, height, padding } = props.dimensions;
 
+		const canvChart: Option<HTMLCanvasElement> = this.canvChart.optionCurrent;
+		const canvPointer: Option<HTMLCanvasElement> = this.canvPointer.optionCurrent;
+
+		renderChart(props.data, canvChart, width, height, padding);
+		renderPointer(canvPointer, width, height);
 	}
 
 	render() {
 		const props = this.props;
-		const { width, height, padding } = props.dimensions;
-
-		renderChart(props.data, this.canvChart.optionCurrent, width, height, padding);
+		const { width, height } = props.dimensions;
 
 		return (
 			<div className={'chart-container'}>

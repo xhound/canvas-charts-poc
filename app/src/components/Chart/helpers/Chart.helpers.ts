@@ -157,7 +157,7 @@ export const renderChart = (data: number[][], canv: Option<HTMLCanvasElement>, w
 	const drawCharts = composeFromArray(chartsSetup);
 
 	const drawAbscissaLine = drawAbscissa(width - paddingRight, zeroPoint, paddingLeft);
-	const drawOrdinateLine = drawOrdinate(width - paddingRight, chartHeight, paddingTop);
+	const drawOrdinateLine = drawOrdinate(width - paddingRight, height - paddingBottom, paddingTop);
 
 	pipe(canv,
 		chain(getCanvasContext),

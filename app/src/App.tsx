@@ -10,7 +10,7 @@ const LENGTH_OF_DATA = 30;
 const UPDATE_DELAY = 2000;
 const CHART_PADDING = {
 	top: some(10),
-	bottom: some(10),
+	bottom: some(20),
 	left: some(10),
 	right: some(40),
 };

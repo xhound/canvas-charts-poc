@@ -58,10 +58,10 @@ export class D3Candles extends React.Component<TD3CandlesProps> {
 			start: subMinutes(candle.x, 30), end: addMinutes(candle.x, 30)
 		})));
 		const xToRender = x + padding.left + 10;
-		ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-		ctx.fillRect(x + padding.left, padding.top, 130, 95);
 		pipe(data,
 			map(data => {
+				ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+				ctx.fillRect(x + padding.left, padding.top, 130, 95);
 				ctx.fillStyle = 'black';
 				ctx.font = '15px Arial';
 				ctx.textAlign = 'left';

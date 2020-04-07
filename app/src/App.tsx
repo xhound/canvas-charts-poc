@@ -1,43 +1,31 @@
 import * as React from 'react';
 import './App.css';
-import { Chart } from './components/Chart/Chart.component';
-import { some } from 'fp-ts/lib/Option';
+import { D3LineChart } from './components/D3LineChart/D3LineChart.component';
+import { D3CHART_DATA, lineChartSettings } from './components/D3LineChart/D3LineChart.fixture';
+import { D3CandleChart, TCandle } from './components/D3CandleChart/D3CandleChart.component';
+import { candleChartSettings, D3CANDLES_DATA, generateCandleData } from './components/D3CandleChart/D3CandleChart.fixture';
 
-// Play with this numbers
+interface AppState {
+	width: number;
+	height: number;
+	data: TCandle[];
+}
 
-const NUMBER_OF_CHARTS = 3;
-const LENGTH_OF_DATA = 30;
-const UPDATE_DELAY = 2000;
-const CHART_PADDING = {
-	top: some(10),
-	bottom: some(20),
-	left: some(10),
-	right: some(40),
-};
-
-const fakeData = () => {
-	const charts = new Array(NUMBER_OF_CHARTS).fill(0);
-	const ds = new Array(LENGTH_OF_DATA).fill(0);
-	return charts.map(() => ds.map(() => Math.random() * (1 + 1) - 1))};
-
-export class App extends React.Component {
-	state = {
-		data: fakeData(),
-		width: 0,
-		height: 0,
-	};
+export class App extends React.Component<{}, AppState> {
+	constructor(props: any) {
+		super(props);
+		this.state = {
+			width: window.innerWidth,
+			height: window.innerHeight,
+			data: D3CANDLES_DATA,
+		};
+	}
 
 	componentDidMount() {
-		window.setInterval(() => {
-			this.setState({
-				data: fakeData(),
-			})
-
-		}, UPDATE_DELAY);
-
 		window.addEventListener('resize', this.handleResize);
-
-		this.handleResize();
+		window.setInterval(() => this.setState({
+			data: generateCandleData(),
+		}), 5000);
 	}
 
 	componentWillUnmount(): void {
@@ -55,14 +43,10 @@ export class App extends React.Component {
 
 	render() {
 		const state = this.state;
-		const dimensions = {
-			width: state.width,
-			height: state.height,
-			padding: some(CHART_PADDING),
-		};
 		return (
-			<section>
-				<Chart data={this.state.data} dimensions={dimensions}/>
+			<section className={'container'}>
+				<D3CandleChart width={state.width / 2} height={state.height} data={state.data} settings={candleChartSettings}/>
+				<D3LineChart width={state.width / 2} height={state.height} data={D3CHART_DATA} settings={lineChartSettings}/>
 			</section>
 		);
 	}

@@ -1,9 +1,0 @@
-.chart-container {
-    position: relative;
-}
-
-.chart, .pointer {
-    position: absolute;
-    top: 0;
-    left: 0;
-}

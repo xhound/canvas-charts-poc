@@ -1,9 +1,9 @@
 import * as React from 'react';
 import './App.css';
-import { D3Chart } from './components/D3Chart/D3Chart.component';
-import { D3CHART_DATA } from './components/D3Chart/D3Chart.fixture';
-import { D3Candles, TCandle } from './components/D3Candles/D3Candles.component';
-import { D3CANDLES_DATA, generateCandleData } from './components/D3Candles/D3Candle.fixture';
+import { D3LineChart } from './components/D3LineChart/D3LineChart.component';
+import { D3CHART_DATA, lineChartSettings } from './components/D3LineChart/D3LineChart.fixture';
+import { D3CandleChart, TCandle } from './components/D3CandleChart/D3CandleChart.component';
+import { candleChartSettings, D3CANDLES_DATA, generateCandleData } from './components/D3CandleChart/D3CandleChart.fixture';
 
 interface AppState {
 	width: number;
@@ -25,7 +25,7 @@ export class App extends React.Component<{}, AppState> {
 		window.addEventListener('resize', this.handleResize);
 		window.setInterval(() => this.setState({
 			data: generateCandleData(),
-		}), 1000);
+		}), 5000);
 	}
 
 	componentWillUnmount(): void {
@@ -44,9 +44,9 @@ export class App extends React.Component<{}, AppState> {
 	render() {
 		const state = this.state;
 		return (
-			<section>
-				{/*<D3Chart width={state.width} height={state.height} data={D3CHART_DATA} />*/}
-				<D3Candles  width={state.width} height={state.height} data={D3CANDLES_DATA} />
+			<section className={'container'}>
+				<D3CandleChart width={state.width / 2} height={state.height} data={state.data} settings={candleChartSettings}/>
+				<D3LineChart width={state.width / 2} height={state.height} data={D3CHART_DATA} settings={lineChartSettings}/>
 			</section>
 		);
 	}

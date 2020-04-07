@@ -1,16 +1,17 @@
 import { contramap, max, min, Ord, ordNumber } from 'fp-ts/lib/Ord';
-import { padding, TChartPoint, TD3ChartProps } from '../D3Chart.component';
+import { padding, TChartPoint, TD3LineChartProps } from '../D3LineChart.component';
 import { fromNullable } from 'fp-ts/es6/Option';
 import {
 	getArea,
+	getHeight, getWidth,
 	getChartHeight,
 	getChartWidth,
 	getData,
 	getLine, getXScale, getXTicks,
 	getYScale,
-	getYTicks
-} from '../selectors/D3Chart.selectors';
-import { format } from "date-fns";
+	getYTicks, getFont, getAxisLabelTextColor, getGridColor, getLineColor, getAreaColor
+} from '../selectors/D3LineChart.selectors';
+import { format } from 'date-fns';
 import { chain, map, Option } from 'fp-ts/lib/Option';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { flow } from 'fp-ts/lib/function';
@@ -29,40 +30,48 @@ export const setRenderZeroPoint = (ctx: CanvasRenderingContext2D) => {
 	return ctx;
 };
 
-export const drawLine = (props: TD3ChartProps) => (ctx: CanvasRenderingContext2D) => {
+export const drawLine = (props: TD3LineChartProps) => (ctx: CanvasRenderingContext2D) => {
 	// render line and area
 	const data = getData(props);
-	const line = getLine(ctx)(props);
+	const lineColor = getLineColor(props);
+	const areaColor = getAreaColor(props);
+	const line = getLine(props);
 
-	ctx.lineWidth = 3;
-	ctx.strokeStyle = 'green';
-	line(data);
-	ctx.stroke();
-	ctx.beginPath();
-
-	const area = getArea(ctx)(props);
+	const area = getArea(props);
 	const grd = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height * .9);
-	grd.addColorStop(0, 'lime');
+	grd.addColorStop(0, areaColor);
 	grd.addColorStop(1, 'white');
 
-	area(data);
+	area.context(ctx)(data);
 	ctx.fillStyle = grd;
 	ctx.fill();
 	ctx.beginPath();
+
+	ctx.lineWidth = 2;
+	ctx.setLineDash([]);
+	ctx.strokeStyle = lineColor;
+	line.context(ctx)(data);
+	ctx.stroke();
+	ctx.beginPath();
+
 	return ctx;
 };
 
-export const drawYAxis = (props: TD3ChartProps) => (ctx: CanvasRenderingContext2D) => {
+export const drawYAxis = (props: TD3LineChartProps) => (ctx: CanvasRenderingContext2D) => {
 	//render YAxis
 	const yTicks = getYTicks(props);
 	const yScale = getYScale(props);
 	const chartWidth = getChartWidth(props);
+	const font = getFont(props);
+	const axisLabelTextColor = getAxisLabelTextColor(props);
+	const gridColor = getGridColor(props);
 
-	ctx.font = '1.5rem Arial';
+	ctx.font = font;
+	ctx.textAlign = 'left';
 	ctx.textBaseline = 'middle';
 
-	ctx.fillStyle = 'black';
-	ctx.strokeStyle = 'grey';
+	ctx.fillStyle = axisLabelTextColor;
+	ctx.strokeStyle = gridColor;
 	ctx.lineWidth = 1;
 
 	yTicks.map(tick => {
@@ -78,29 +87,42 @@ export const drawYAxis = (props: TD3ChartProps) => (ctx: CanvasRenderingContext2
 	return ctx;
 };
 
-export const drawXAxis = (props: TD3ChartProps) => (ctx: CanvasRenderingContext2D) => {
+export const drawXAxis = (props: TD3LineChartProps) => (ctx: CanvasRenderingContext2D) => {
 	const xTicks = getXTicks(props);
 	const xScale = getXScale(props);
 	const chartHeight = getChartHeight(props);
-	xTicks.map(tick => {
+	xTicks.forEach(tick => {
 		const x = xScale(tick);
 		ctx.textAlign = 'center';
+		ctx.setLineDash([2, 2]);
 		ctx.moveTo(x, 0);
 		ctx.lineTo(x, chartHeight);
 		ctx.stroke();
 		ctx.beginPath();
 
-		return ctx.fillText(format(tick, 'MM/dd/yy'), x, chartHeight + 20)
-	})
+		ctx.fillText(format(tick, 'MM/dd/yy'), x, chartHeight + 20)
+	});
+	ctx.beginPath();
+	return ctx;
 };
 
-export const renderLineChart = (props: TD3ChartProps, canv: Option<HTMLCanvasElement>) => {
+export const clearCanvas = (props: TD3LineChartProps) => (ctx: CanvasRenderingContext2D) => {
+	const width = getWidth(props);
+	const height = getHeight(props);
+	ctx.clearRect(0, 0, width, height);
+	return ctx;
+};
+
+export const setZeroPointBack = (ctx: CanvasRenderingContext2D) => ctx.resetTransform();
+
+export const renderLineChart = (props: TD3LineChartProps, canv: Option<HTMLCanvasElement>) => {
 	const renderLine = drawLine(props);
 	const renderYAxis = drawYAxis(props);
 	const renderXAxis = drawXAxis(props);
+	const clear = clearCanvas(props);
 
 	pipe(canv,
 		chain(getCanvasContext),
-		map(flow(setRenderZeroPoint, renderLine, renderYAxis, renderXAxis))
+		map(flow(clear, setRenderZeroPoint, renderLine, renderYAxis, renderXAxis, setZeroPointBack))
 	);
 };

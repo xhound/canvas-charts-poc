@@ -11,45 +11,28 @@ interface AppState {
 	data: TCandle[];
 }
 
-export class App extends React.Component<{}, AppState> {
-	constructor(props: any) {
-		super(props);
-		this.state = {
-			width: window.innerWidth,
-			height: window.innerHeight,
-			data: D3CANDLES_DATA,
-		};
-	}
-
-	componentDidMount() {
-		window.addEventListener('resize', this.handleResize);
-		window.setInterval(() => this.setState({
-			data: generateCandleData(),
-		}), 5000);
-	}
-
-	componentWillUnmount(): void {
-		window.removeEventListener('resize', this.handleResize);
-	}
-
-	handleResize = () => {
-		const width = window.innerWidth;
-		const height = window.innerHeight;
-		this.setState({
-			width,
-			height,
-		});
+export const App: React.FC<{}> = () => {
+	const [width, setWidth] = React.useState<number>(window.innerWidth);
+	const [height, setHeight] = React.useState<number>(window.innerHeight);
+	const [data, setData] = React.useState<TCandle[]>(D3CANDLES_DATA);
+	
+	const handleResize = () => {
+		setWidth(window.innerWidth);
+		setHeight(window.innerHeight);
 	};
 
-	render() {
-		const state = this.state;
-		return (
-			<section className={'container'}>
-				<D3CandleChart width={state.width / 2} height={state.height} data={state.data} settings={candleChartSettings}/>
-				<D3LineChart width={state.width / 2} height={state.height} data={D3CHART_DATA} settings={lineChartSettings}/>
-			</section>
-		);
-	}
+	React.useEffect(() => {
+		window.addEventListener('resize', handleResize);
+		window.setInterval(() => setData(generateCandleData()), 5000);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
+
+	return (
+		<section className={'container'}>
+			<D3CandleChart width={width / 2} height={height} data={data} settings={candleChartSettings}/>
+			<D3LineChart width={width / 2} height={height} data={D3CHART_DATA} settings={lineChartSettings}/>
+		</section>
+	);
 }
 
 export default App;

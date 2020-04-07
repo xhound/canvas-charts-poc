@@ -4,6 +4,7 @@ import { renderCandles } from './helpers/D3CandleChart.helpers';
 import { drawPointer } from './helpers/D3CandleChartPointer.helpers';
 import { renderChartInfo } from './helpers/D3ChartInfo.helpers';
 import { CanvasChart } from '../CanvasChart/CanvasChart.component';
+import { Option } from 'fp-ts/lib/Option';
 
 export const yAxisWidth = 100;
 export const xAxisHeight = 50;
@@ -56,26 +57,25 @@ export interface TD3CandleChartProps {
 	settings: TD3CandleChartSettings
 }
 
-export class D3CandleChart extends React.PureComponent<TD3CandleChartProps> {
-	render() {
-		const props = this.props;
-		const width = getWidth(props);
-		const height = getHeight(props);
+export const D3CandleChart: React.FC<TD3CandleChartProps> = React.memo((props) => {
 
-		return (
-			<CanvasChart<TD3CandleChartProps>
-				width={width}
-				height={height}
-				settings={props.settings}
-				data={props.data}
-				renderChart={renderCandles}
-				renderOnMove={this.renderOnMove}
-			/>
-		)
-	}
+	const width = getWidth(props);
+	const height = getHeight(props);
+	const {data, settings} = props;
+	const renderProps = {width, height, data, settings};
 
-	renderOnMove = (props: TD3CandleChartProps, ctx: CanvasRenderingContext2D, x: number, y: number) => {
-		renderChartInfo(props, ctx, x - padding.left, y - padding.top);
+	const renderChart = (canv: Option<HTMLCanvasElement>) => renderCandles(renderProps, canv);
+	const renderOnMove = (ctx: CanvasRenderingContext2D, x: number, y: number) => {
+		renderChartInfo(renderProps, ctx, x - padding.left, y - padding.top);
 		drawPointer(props, ctx, x, y);
 	}
-}
+
+	return (
+		<CanvasChart
+			width={width}
+			height={height}
+			renderChart={renderChart}
+			renderOnMove={renderOnMove}
+		/>
+	)
+});

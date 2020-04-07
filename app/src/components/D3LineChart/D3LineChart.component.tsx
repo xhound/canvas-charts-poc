@@ -3,6 +3,7 @@ import { getHeight, getWidth } from './selectors/D3LineChart.selectors';
 import { renderLineChart } from './helpers/D3LineChart.helpers';
 import { drawPointer } from './helpers/D3LineChartPointer.helpers';
 import { CanvasChart } from '../CanvasChart/CanvasChart.component';
+import { Option } from 'fp-ts/lib/Option';
 
 export const yAxisWidth = 100;
 export const xAxisHeight = 50;
@@ -42,20 +43,21 @@ export interface TD3LineChartProps {
 	settings: TD3LineChartSettings;
 }
 
-export class D3LineChart extends React.PureComponent<TD3LineChartProps> {
-	render() {
-		const props = this.props;
-		const width = getWidth(props);
-		const height = getHeight(props);
-		return (
-			<CanvasChart<TD3LineChartProps>
-				width={width}
-				height={height}
-				data={props.data}
-				renderChart={renderLineChart}
-				renderOnMove={drawPointer}
-				settings={props.settings}
-			/>
-		)
-	}
-}
+export const D3LineChart: React.FC<TD3LineChartProps> = React.memo((props) => {
+	const width = getWidth(props);
+	const height = getHeight(props);
+	const {data, settings} = props;
+	const renderProps = {width, height, data, settings};
+
+	const renderChart = (canv: Option<HTMLCanvasElement>) => renderLineChart(renderProps, canv);
+	const renderOnMove = (ctx: CanvasRenderingContext2D, x: number, y: number) => drawPointer(renderProps, ctx, x, y);
+
+	return (
+		<CanvasChart
+			width={width}
+			height={height}
+			renderChart={renderChart}
+			renderOnMove={renderOnMove}
+		/>
+	)
+});
